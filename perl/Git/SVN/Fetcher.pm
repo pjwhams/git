@@ -1,5 +1,5 @@
 package Git::SVN::Fetcher;
-use vars qw/@ISA $_ignore_regex $_preserve_empty_dirs $_placeholder_filename
+use vars qw/@ISA $_ignore_regex $_include_regex $_preserve_empty_dirs $_placeholder_filename
             @deleted_gpath %added_placeholder $repo_id/;
 use strict;
 use warnings;
@@ -32,6 +32,10 @@ sub new {
 	my $k = "svn-remote.$repo_id.ignore-paths";
 	my $v = eval { command_oneline('config', '--get', $k) };
 	$self->{ignore_regex} = $v;
+
+	$k = "svn-remote.$repo_id.include-paths";
+	$v = eval { command_oneline('config', '--get', $k) };
+	$self->{include_regex} = $v;
 
 	$k = "svn-remote.$repo_id.preserve-empty-dirs";
 	$v = eval { command_oneline('config', '--get', '--bool', $k) };
@@ -122,6 +126,8 @@ sub is_path_ignored {
 	return 1 if in_dot_git($path);
 	return 1 if defined($self->{ignore_regex}) &&
 	            $path =~ m!$self->{ignore_regex}!;
+	return 0 if defined($self->{include_regex}) &&
+	            $path =~ m!$self->{include_regex}!;
 	return 0 unless defined($_ignore_regex);
 	return 1 if $path =~ m!$_ignore_regex!o;
 	return 0;
