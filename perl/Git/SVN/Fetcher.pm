@@ -121,6 +121,7 @@ sub in_dot_git {
 }
 
 # return value: 0 -- don't ignore, 1 -- ignore
+# This will also check whether the path is explicitly included
 sub is_path_ignored {
 	my ($self, $path) = @_;
 	return 1 if in_dot_git($path);
@@ -128,6 +129,10 @@ sub is_path_ignored {
 	            $path =~ m!$self->{ignore_regex}!;
 	return 0 if defined($self->{include_regex}) &&
 	            $path =~ m!$self->{include_regex}!;
+	return 0 if defined($_include_regex) &&
+	            $path =~ m!$_include_regex!;
+	return 1 if defined($self->{include_regex});
+	return 1 if defined($_include_regex);
 	return 0 unless defined($_ignore_regex);
 	return 1 if $path =~ m!$_ignore_regex!o;
 	return 0;
@@ -217,8 +222,6 @@ sub add_file {
 	my ($self, $path, $pb, $cp_path, $cp_rev) = @_;
 	my $mode;
 
-	my $ignore=($self->is_path_ignored($path));
-	print "path: $path, ignore: $ignore \n";
 	if (!$self->is_path_ignored($path)) {
 		my ($dir, $file) = ($path =~ m#^(.*?)/?([^/]+)$#);
 		delete $self->{empty}->{$dir};

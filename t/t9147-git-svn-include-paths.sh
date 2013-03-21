@@ -26,13 +26,6 @@ test_expect_success 'setup test repository' '
 	)
 '
 
-test_expect_success 'clone an SVN repository with ignored www and xxx directories' '
-	git svn clone --ignore-paths="^(www|xxx)" "$svnrepo" g &&
-	echo test_qqq > expect &&
-	for i in g/*/*.txt; do cat $i >> expect2; done &&
-	test_cmp expect expect2
-'
-
 test_expect_success 'clone an SVN repository with filter to include qqq directory' '
 	git svn clone --include-paths="qqq" "$svnrepo" g &&
 	echo test_qqq > expect &&
@@ -41,19 +34,19 @@ test_expect_success 'clone an SVN repository with filter to include qqq director
 '
 
 
-test_expect_success 'init+fetch an SVN repository with ignored www and xxx directories' '
+test_expect_success 'init+fetch an SVN repository with included qqq directory' '
 	git svn init "$svnrepo" c &&
-	( cd c && git svn fetch --ignore-paths="^(www|xxx)" ) &&
-	rm expect2 &&
-	echo test_qqq > expect &&
-	for i in c/*/*.txt; do cat $i >> expect2; done &&
-	test_cmp expect expect2
+ 	( cd c && git svn fetch --include-paths="qqq" ) &&
+ 	rm expect2 &&
+ 	echo test_qqq > expect &&
+ 	for i in c/*/*.txt; do cat $i >> expect2; done &&
+ 	test_cmp expect expect2
 '
 
-test_expect_success 'verify ignore-paths config saved by clone' '
+test_expect_success 'verify include-paths config saved by clone' '
 	(
 	    cd g &&
-	    git config --get svn-remote.svn.ignore-paths | fgrep "www|xxx"
+	    git config --get svn-remote.svn.include-paths | fgrep "qqq"
 	)
 '
 
@@ -67,7 +60,7 @@ test_expect_success 'SVN-side change outside of www' '
 	)
 '
 
-test_expect_success 'update git svn-cloned repo (config ignore)' '
+test_expect_success 'update git svn-cloned repo (config include)' '
 	(
 		cd g &&
 		git svn rebase &&
@@ -78,10 +71,10 @@ test_expect_success 'update git svn-cloned repo (config ignore)' '
 	)
 '
 
-test_expect_success 'update git svn-cloned repo (option ignore)' '
+test_expect_success 'update git svn-cloned repo (option include)' '
 	(
 		cd c &&
-		git svn rebase --ignore-paths="^www" &&
+		git svn rebase --include-paths="qqq" &&
 		printf "test_qqq\nb\n" > expect &&
 		for i in */*.txt; do cat $i >> expect2; done &&
 		test_cmp expect2 expect &&
