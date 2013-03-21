@@ -217,6 +217,8 @@ sub add_file {
 	my ($self, $path, $pb, $cp_path, $cp_rev) = @_;
 	my $mode;
 
+	my $ignore=($self->is_path_ignored($path));
+	print "path: $path, ignore: $ignore \n";
 	if (!$self->is_path_ignored($path)) {
 		my ($dir, $file) = ($path =~ m#^(.*?)/?([^/]+)$#);
 		delete $self->{empty}->{$dir};
